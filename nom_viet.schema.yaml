@@ -47,6 +47,12 @@ speller:
   alphabet: "abcdefghijklmnopqrstuvwxyz"
   delimiter: " '"
   algebra:
+    # Accept single-w 'uow' as a synonym for stored 'uwow' (ươ cluster).
+    # Matches standard Telex on commercial IMEs (Unikey, etc.) and saves a
+    # keystroke on ~1,400 entries (e.g. nguowfi → người, chuowsng → xướng).
+    # Tone codes follow ow in storage (uwowf/uwows/...), so uwow stays
+    # contiguous and one rule covers all toned variants.
+    - "derive/uwow/uow/"
     # Allow first-letter abbreviation for quick input
     - "abbrev/^([a-z]).+$/$1/"
 
