@@ -26,9 +26,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from analyze_pua import (  # noqa: E402
+    _is_han_or_pua,
     extract_gdnhv,
     extract_tdcndg,
-    is_pua,
     qn_to_bare,
     qn_to_telex,
 )
@@ -119,7 +119,7 @@ def main() -> int:
     skipped_already = 0
     for (reading, text), info in by_pair.items():
         # Skip if no PUA char in text (defensive — extractors already filter)
-        if not any(is_pua(ord(c)) for c in text):
+        if not any(_is_han_or_pua(c) for c in text):
             continue
         bare = qn_to_bare(reading)
         # Skip if bare-reading + char already covered in existing dict

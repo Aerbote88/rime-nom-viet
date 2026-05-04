@@ -189,8 +189,29 @@ def qn_to_bare(s: str) -> str:
     return "".join(c for c in stripped if c.isalpha())
 
 
+def _is_han_or_pua(c: str) -> bool:
+    """Match any Han/Nôm character: CJK Unified, all extensions A–I, compatibility,
+    radicals, plus all PUA ranges (chunom.org allocations)."""
+    cp = ord(c)
+    return (
+        0x3400  <= cp <= 0x4DBF  or  # CJK Ext A
+        0x4E00  <= cp <= 0x9FFF  or  # CJK Unified
+        0xF900  <= cp <= 0xFAFF  or  # CJK Compatibility
+        0x20000 <= cp <= 0x2A6DF or  # CJK Ext B
+        0x2A700 <= cp <= 0x2B73F or  # CJK Ext C
+        0x2B740 <= cp <= 0x2B81F or  # CJK Ext D
+        0x2B820 <= cp <= 0x2CEAF or  # CJK Ext E
+        0x2CEB0 <= cp <= 0x2EBEF or  # CJK Ext F
+        0x2EBF0 <= cp <= 0x2EE5F or  # CJK Ext G (BMP-adjacent block)
+        0x30000 <= cp <= 0x3134F or  # CJK Ext G
+        0x31350 <= cp <= 0x323AF or  # CJK Ext H
+        0x323B0 <= cp <= 0x33479 or  # CJK Ext I
+        is_pua(cp) is not None
+    )
+
+
 def extract_gdnhv() -> list[tuple[str, str]]:
-    """Return list of (qn_reading, char) where char has any PUA codepoint."""
+    """Return list of (qn_reading, char) for every Han/Nôm or PUA orth."""
     out = []
     tree = ET.parse(GDNHV)
     for entry in tree.iterfind(".//entry"):
@@ -205,7 +226,7 @@ def extract_gdnhv() -> list[tuple[str, str]]:
             if not orth.text:
                 continue
             text = orth.text.strip()
-            if any(is_pua(ord(c)) for c in text):
+            if any(_is_han_or_pua(c) for c in text):
                 out.append((reading, text))
     return out
 
@@ -220,7 +241,7 @@ def extract_tdcndg() -> list[tuple[str, str]]:
             continue
         reading = qn.text.strip()
         text = hn.text.strip()
-        if any(is_pua(ord(c)) for c in text):
+        if any(_is_han_or_pua(c) for c in text):
             out.append((reading, text))
     return out
 
